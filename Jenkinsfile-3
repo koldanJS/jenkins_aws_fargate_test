@@ -1,0 +1,13 @@
+@Library("shared-library")
+pipeline {
+    agent any
+    stages {
+        stage('Hello') {
+            steps {
+                echo 'Hello World'
+                addSidebarLink(url:"https://www.cloudbees.com/", text: "CloudBees website", icon: "/userContent/cloudbees.png")
+            }
+           
+        }
+    }
+}
