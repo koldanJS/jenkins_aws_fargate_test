@@ -1,13 +1,250 @@
-@Library("shared-library")
+@Library('digifi-shared') _ // Где найти?
+
+def CLOUD = 'digifi-staging'  // ??
+def GITHUB_CREDENTIAL_ID = 'github-digifi'
+def NAMESPACE = 'apps'
+def MIGRATION_CHECK = false
+
+properties([
+    parameters([
+        param.getGithubRepoReleases(  // param.groovy + func
+            github_repo:'https://api.github.com/repos/digifi-io/product-backend/releases',
+            github_credentials_id: "${GITHUB_CREDENTIAL_ID}")
+    ])
+])
+
 pipeline {
-    agent any
+    agent {
+        kubernetes {  // Откуда параметры?
+            cloud "${CLOUD}"
+            yaml param.podYamlTemplate(namespace: "${NAMESPACE}")
+            showRawYaml false
+        }
+    }
+
+    options {
+        ansiColor('xterm')  // ??
+        timestamps()
+        buildDiscarder(
+        logRotator(artifactDaysToKeepStr: '0',
+            artifactNumToKeepStr: '60',
+            daysToKeepStr: '60',
+            numToKeepStr: '60')
+        )
+        disableConcurrentBuilds()
+    }
+
+    environment {
+        AWS_REGION = 'us-east-1'
+        AWS_CREDENTIALS_ID = 'digifi-staging-deployment-user'
+        AWS_SECRETS_MANAGER_ID = 'arn:aws:secretsmanager:us-east-1:266311286062:secret:digifi/staging/application-dVcQU09D-TmX6IX'  // Не используется
+        DEFAULT_INGRESS_HOST = 'staging.digifi.cc'  // Не используется
+        ECR_REGISTRY = '439232230176.dkr.ecr.us-east-1.amazonaws.com'
+        ENVIRONMENT_NAME = 'staging'  // Не используется
+        GIT_REPO_TOKEN = credentials("${GITHUB_CREDENTIAL_ID}")  // Не используется
+        GITHUB_CREDENTIAL_ID = "${GITHUB_CREDENTIAL_ID}"
+        NAMESPACE = "${NAMESPACE}"  // Дубликат? Не используется
+        HELM_EXPERIMENTAL_OCI = 1  // Не используется
+        HELM_VALUES_S3_BUCKET = 'digifi-helm-values-eyjhbgcioijiuzi1niisinr5cci6ikpxvcj9'   // Не используется
+        SECRET_NAME_OR_ARN = 'secrets/migrations/test2'  // Не используется
+        SECRETS_MIGRATIONS_PATH = 'secrets-migrator/secrets'  // Не используется
+    }
+
     stages {
-        stage('Hello') {
-            steps {
-                echo 'Hello World'
-                addSidebarLink(url:"https://www.cloudbees.com/", text: "CloudBees website", icon: "/userContent/cloudbees.png")
+        stage('Starting Pipeline') {
+            when {
+                allOf {
+                    not { environment name: 'RELEASE_VERSION', value: 'error' }  // Откуда возьмется? Вернется из getGithubRepoReleases()
+                    not { environment name: 'RELEASE_VERSION', value: '' }
+                    expression { params.RELEASE_VERSION != null } // В парамс не записывали, сюда все возвращенные значения попадают?
+                }
             }
-           
+            steps {   // Тут все понятно, плагин + энвы
+                slackSend color: 'good',
+                 message: "Job <${env.BUILD_URL}|${env.JOB_NAME}/${env.BUILD_NUMBER}> has started at ${(new Date()).format("yyyy-MM-dd HH:mm 'UTC'")} by ${env.BUILD_USER} from Jenkins Pipeline",
+                 channel: '#test-ns'
+            }
+        }
+
+        stage('Checkout secrets-migrator script') {
+            when {
+                allOf {
+                    not { environment name: 'RELEASE_VERSION', value: 'error' }
+                    not { environment name: 'RELEASE_VERSION', value: '' }
+                    expression { params.RELEASE_VERSION != null }
+                }
+            }
+            steps {
+                container('python') {   // Нигде не видел этот синтаксис
+                    checkout(
+                        [
+                            $class: 'GitSCM',
+                            branches: [[name: '*/DEVOPS-386-test']],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [
+                                [
+                                    credentialsId: "${GITHUB_CREDENTIAL_ID}",
+                                    url: 'https://github.com/digifi-io/digifi-devops.git'
+                                ]
+                            ]
+                        ]
+                    )
+                    sh(returnStdout: true,
+                       label: 'Install secrets-migrator script requirements',
+                       script: 'pip install -r secrets-migrator/requirements.txt'
+                    )
+                }
+            }
+        }
+        stage('Check secrets migration') {
+            when {
+                allOf {
+                    not { environment name: 'RELEASE_VERSION', value: 'error' }
+                    not { environment name: 'RELEASE_VERSION', value: '' }
+                    expression { params.RELEASE_VERSION != null }
+                }
+            }
+            steps {
+                script {
+                    MIGRATION_CHECK = checkSecretsMigration() // метод из либы
+                    echo "${MIGRATION_CHECK}"
+                }
+            }
+        }
+        stage('Run secrets migration') {
+            when {
+                allOf {
+                    expression { "${MIGRATION_CHECK}" == 'True' }
+                    not { environment name: 'RELEASE_VERSION', value: 'error' }
+                    not { environment name: 'RELEASE_VERSION', value: '' }
+                    expression { params.RELEASE_VERSION != null }
+                }
+            }
+            steps {
+                secretsMigration()  // метод из либы
+            }
+            post {  // Тут все понятно
+                success {
+                    script {
+                      MIGRATION_APPLIED = true
+                    }
+                }
+                failure {
+                    script {
+                      MIGRATION_APPLIED = false
+                    }
+                }
+            }
+        }
+        stage('Login into ECR') {
+            when {
+                allOf {
+                    not { environment name: 'RELEASE_VERSION', value: 'error' }
+                    not { environment name: 'RELEASE_VERSION', value: '' }
+                    expression { params.RELEASE_VERSION != null }
+                }
+            }
+            steps {
+                container('helm') { // ???
+                    withAWS(region: "${AWS_REGION}", credentials: "${AWS_CREDENTIALS_ID}") {  // Видимо плагин AWS Steps
+                        sh(
+                            returnStdout: true,
+                            label: 'Login into ECR',
+                            script: "aws ecr get-login-password --region ${AWS_REGION} | \
+                                    helm registry login --username AWS --password-stdin ${ECR_REGISTRY}"
+                        )
+                    }
+                }
+            }
+        }
+
+        stage('Running helm deploy') {
+            when {
+                allOf {
+                    not { environment name: 'RELEASE_VERSION', value: 'error' }
+                    not { environment name: 'RELEASE_VERSION', value: '' }
+                    expression { params.RELEASE_VERSION != null }
+                }
+            }
+            steps {
+                script {
+                    parallel([  // Эти действия параллельны, но что происходит (синтаксис)? В библиотечный метод передаются замапленные на имена параметры
+                        'digifi-auth': helmDeployClosure(
+                            helm_ecr_repository:  'digifi-auth-helm-chart',
+                            release_name:  'digifi-auth',
+                            helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+                        'digifi-core': helmDeployClosure(
+                            helm_ecr_repository:  'digifi-core-helm-chart',
+                            release_name:  'digifi-core',
+                            default_ingress_host: 'adfaf.blal.afa',
+                            helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+                        'digifi-de': helmDeployClosure(
+                            helm_ecr_repository:  'digifi-decision-engine-helm-chart',
+                            release_name:  'digifi-de',
+                            helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+                        'digifi-dlp': helmDeployClosure(
+                            helm_ecr_repository:  'digifi-dlp-helm-chart',
+                            release_name:  'digifi-dlp',
+                            helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+                        'digifi-dp': helmDeployClosure(
+                            helm_ecr_repository:  'digifi-decision-processing-helm-chart',
+                            release_name:  'digifi-dp',
+                            helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+                        'digifi-legacy': helmDeployClosure(
+                            helm_ecr_repository:  'digifi-legacy-backend-helm-chart',
+                            release_name:  'digifi-legacy',
+                            helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+                        'digifi-los': helmDeployClosure(
+                            helm_ecr_repository:  'digifi-loan-origination-system-helm-chart',
+                            release_name:  'digifi-los',
+                            helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+                        'digifi-webhooks': helmDeployClosure(
+                            helm_ecr_repository:  'digifi-webhooks-helm-chart',
+                            release_name:  'digifi-webhooks',
+                            helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+                        'digifi-process-automation': helmDeployClosure(
+                            helm_ecr_repository:  'digifi-process-automation-helm-chart',
+                            release_name:  'digifi-process-automation',
+                            helm_chart_version:  "2.0.0-${RELEASE_VERSION}")
+                    ])
+                }
+            }
+        }
+        stage('Running digifi-migration-job') {
+            when {
+                allOf {
+                    not { environment name: 'RELEASE_VERSION', value: 'error' }
+                    not { environment name: 'RELEASE_VERSION', value: '' }
+                    expression { params.RELEASE_VERSION != null }
+                }
+            }
+            steps {
+                script {
+                    helmDeployClosure(  // Библиотечный метод
+                        helm_ecr_repository:  'digifi-migrations-helm-chart',
+                        release_name:  'digifi-migration-job',
+                        helm_chart_version:  "2.0.0-${RELEASE_VERSION}").call() // ??
+                }
+            }
+            post {
+                success {
+                    script {
+                        getK8sLogs(label: 'app=digifi-migration-job') // Библиотечный метод
+                    }
+                }
+            }
+        }
+    }
+    post {
+        failure {
+            script {
+                if ("${MIGRATION_CHECK}" == 'True' && "${MIGRATION_APPLIED}" == true) {
+                    rollbackSecretMigrationToPrevious() // Библиотечный метод, откат на прошлую версию
+                }
+
+            }
         }
     }
 }
