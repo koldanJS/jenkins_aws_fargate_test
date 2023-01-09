@@ -1,11 +1,11 @@
 @Library('digifi-shared') _ // Где найти?
 
-def CLOUD = 'digifi-staging'  // ??
+def CLOUD = 'digifi-staging'
 def GITHUB_CREDENTIAL_ID = 'github-digifi'
 def NAMESPACE = 'apps'
 def MIGRATION_CHECK = false
 
-properties([
+properties([  // Зачем здесь?
     parameters([
         param.getGithubRepoReleases(  // param.groovy + func
             github_repo:'https://api.github.com/repos/digifi-io/product-backend/releases',
@@ -16,14 +16,14 @@ properties([
 pipeline {
     agent {
         kubernetes {  // Откуда параметры?
-            cloud "${CLOUD}"
-            yaml param.podYamlTemplate(namespace: "${NAMESPACE}")
-            showRawYaml false
+      cloud "${CLOUD}"
+      yaml param.podYamlTemplate(namespace: "${NAMESPACE}")
+      showRawYaml false
         }
     }
 
     options {
-        ansiColor('xterm')  // ??
+        ansiColor('xterm')
         timestamps()
         buildDiscarder(
         logRotator(artifactDaysToKeepStr: '0',
@@ -52,31 +52,31 @@ pipeline {
 
     stages {
         stage('Starting Pipeline') {
-            when {
-                allOf {
-                    not { environment name: 'RELEASE_VERSION', value: 'error' }  // Откуда возьмется? Вернется из getGithubRepoReleases()
-                    not { environment name: 'RELEASE_VERSION', value: '' }
-                    expression { params.RELEASE_VERSION != null } // В парамс не записывали, сюда все возвращенные значения попадают?
-                }
-            }
-            steps {   // Тут все понятно, плагин + энвы
-                slackSend color: 'good',
+      when {
+        allOf {
+          not { environment name: 'RELEASE_VERSION', value: 'error' }  // Откуда возьмется? Вернется из getGithubRepoReleases()
+          not { environment name: 'RELEASE_VERSION', value: '' }
+          expression { params.RELEASE_VERSION != null } // В парамс не записывали, сюда все возвращенные значения попадают?
+        }
+      }
+      steps {   // Тут все понятно, плагин + энвы
+        slackSend color: 'good',
                  message: "Job <${env.BUILD_URL}|${env.JOB_NAME}/${env.BUILD_NUMBER}> has started at ${(new Date()).format("yyyy-MM-dd HH:mm 'UTC'")} by ${env.BUILD_USER} from Jenkins Pipeline",
                  channel: '#test-ns'
-            }
+      }
         }
 
         stage('Checkout secrets-migrator script') {
-            when {
-                allOf {
-                    not { environment name: 'RELEASE_VERSION', value: 'error' }
-                    not { environment name: 'RELEASE_VERSION', value: '' }
-                    expression { params.RELEASE_VERSION != null }
-                }
-            }
-            steps {
-                container('python') {   // Нигде не видел этот синтаксис
-                    checkout(
+      when {
+        allOf {
+          not { environment name: 'RELEASE_VERSION', value: 'error' }
+          not { environment name: 'RELEASE_VERSION', value: '' }
+          expression { params.RELEASE_VERSION != null }
+        }
+      }
+      steps {
+        container('python') {   // Нигде не видел этот синтаксис
+          checkout(
                         [
                             $class: 'GitSCM',
                             branches: [[name: '*/DEVOPS-386-test']],
@@ -91,86 +91,86 @@ pipeline {
                             ]
                         ]
                     )
-                    sh(returnStdout: true,
+          sh(returnStdout: true,
                        label: 'Install secrets-migrator script requirements',
                        script: 'pip install -r secrets-migrator/requirements.txt'
                     )
-                }
-            }
+        }
+      }
         }
         stage('Check secrets migration') {
-            when {
-                allOf {
-                    not { environment name: 'RELEASE_VERSION', value: 'error' }
-                    not { environment name: 'RELEASE_VERSION', value: '' }
-                    expression { params.RELEASE_VERSION != null }
-                }
-            }
-            steps {
-                script {
-                    MIGRATION_CHECK = checkSecretsMigration() // метод из либы
-                    echo "${MIGRATION_CHECK}"
-                }
-            }
+      when {
+        allOf {
+          not { environment name: 'RELEASE_VERSION', value: 'error' }
+          not { environment name: 'RELEASE_VERSION', value: '' }
+          expression { params.RELEASE_VERSION != null }
+        }
+      }
+      steps {
+        script {
+          MIGRATION_CHECK = checkSecretsMigration() // метод из либы
+          echo "${MIGRATION_CHECK}"
+        }
+      }
         }
         stage('Run secrets migration') {
-            when {
-                allOf {
-                    expression { "${MIGRATION_CHECK}" == 'True' }
-                    not { environment name: 'RELEASE_VERSION', value: 'error' }
-                    not { environment name: 'RELEASE_VERSION', value: '' }
-                    expression { params.RELEASE_VERSION != null }
-                }
-            }
-            steps {
-                secretsMigration()  // метод из либы
-            }
-            post {  // Тут все понятно
-                success {
-                    script {
-                      MIGRATION_APPLIED = true
-                    }
-                }
-                failure {
-                    script {
-                      MIGRATION_APPLIED = false
-                    }
-                }
-            }
+      when {
+        allOf {
+          expression { "${MIGRATION_CHECK}" == 'True' }
+          not { environment name: 'RELEASE_VERSION', value: 'error' }
+          not { environment name: 'RELEASE_VERSION', value: '' }
+          expression { params.RELEASE_VERSION != null }
+        }
+      }
+      steps {
+        secretsMigration()  // метод из либы
+      }
+      post {  // Тут все понятно
+        success {
+          script {
+            MIGRATION_APPLIED = true
+          }
+        }
+        failure {
+          script {
+            MIGRATION_APPLIED = false
+          }
+        }
+      }
         }
         stage('Login into ECR') {
-            when {
-                allOf {
-                    not { environment name: 'RELEASE_VERSION', value: 'error' }
-                    not { environment name: 'RELEASE_VERSION', value: '' }
-                    expression { params.RELEASE_VERSION != null }
-                }
-            }
-            steps {
-                container('helm') { // ???
-                    withAWS(region: "${AWS_REGION}", credentials: "${AWS_CREDENTIALS_ID}") {  // Видимо плагин AWS Steps
-                        sh(
+      when {
+        allOf {
+          not { environment name: 'RELEASE_VERSION', value: 'error' }
+          not { environment name: 'RELEASE_VERSION', value: '' }
+          expression { params.RELEASE_VERSION != null }
+        }
+      }
+      steps {
+        container('helm') { // ???
+          withAWS(region: "${AWS_REGION}", credentials: "${AWS_CREDENTIALS_ID}") {  // Видимо плагин AWS Steps
+            sh(
                             returnStdout: true,
                             label: 'Login into ECR',
                             script: "aws ecr get-login-password --region ${AWS_REGION} | \
                                     helm registry login --username AWS --password-stdin ${ECR_REGISTRY}"
                         )
-                    }
-                }
-            }
+          }
+        }
+      }
         }
 
         stage('Running helm deploy') {
-            when {
-                allOf {
-                    not { environment name: 'RELEASE_VERSION', value: 'error' }
-                    not { environment name: 'RELEASE_VERSION', value: '' }
-                    expression { params.RELEASE_VERSION != null }
-                }
-            }
-            steps {
-                script {
-                    parallel([  // Эти действия параллельны, но что происходит (синтаксис)? В библиотечный метод передаются замапленные на имена параметры
+      when {
+        allOf {
+          not { environment name: 'RELEASE_VERSION', value: 'error' }
+          not { environment name: 'RELEASE_VERSION', value: '' }
+          expression { params.RELEASE_VERSION != null }
+        }
+      }
+      steps {
+        script {
+          parallel([  // Эти действия параллельны, но что происходит (синтаксис)? В библиотечный метод передаются замапленные на имена параметры
                         'digifi-auth': helmDeployClosure(
                             helm_ecr_repository:  'digifi-auth-helm-chart',
                             release_name:  'digifi-auth',
@@ -209,42 +209,41 @@ pipeline {
                             release_name:  'digifi-process-automation',
                             helm_chart_version:  "2.0.0-${RELEASE_VERSION}")
                     ])
-                }
-            }
+        }
+      }
         }
         stage('Running digifi-migration-job') {
-            when {
-                allOf {
-                    not { environment name: 'RELEASE_VERSION', value: 'error' }
-                    not { environment name: 'RELEASE_VERSION', value: '' }
-                    expression { params.RELEASE_VERSION != null }
-                }
-            }
-            steps {
-                script {
-                    helmDeployClosure(  // Библиотечный метод
+      when {
+        allOf {
+          not { environment name: 'RELEASE_VERSION', value: 'error' }
+          not { environment name: 'RELEASE_VERSION', value: '' }
+          expression { params.RELEASE_VERSION != null }
+        }
+      }
+      steps {
+        script {
+          helmDeployClosure(  // Библиотечный метод
                         helm_ecr_repository:  'digifi-migrations-helm-chart',
                         release_name:  'digifi-migration-job',
                         helm_chart_version:  "2.0.0-${RELEASE_VERSION}").call() // ??
-                }
-            }
-            post {
-                success {
-                    script {
-                        getK8sLogs(label: 'app=digifi-migration-job') // Библиотечный метод
-                    }
-                }
-            }
+        }
+      }
+      post {
+        success {
+          script {
+            getK8sLogs(label: 'app=digifi-migration-job') // Библиотечный метод
+          }
+        }
+      }
         }
     }
     post {
         failure {
-            script {
-                if ("${MIGRATION_CHECK}" == 'True' && "${MIGRATION_APPLIED}" == true) {
-                    rollbackSecretMigrationToPrevious() // Библиотечный метод, откат на прошлую версию
-                }
-
-            }
+      script {
+        if ("${MIGRATION_CHECK}" == 'True' && "${MIGRATION_APPLIED}" == true) {
+          rollbackSecretMigrationToPrevious() // Библиотечный метод, откат на прошлую версию
+        }
+      }
         }
     }
 }
