@@ -1,5 +1,5 @@
 def CLOUD = 'digifi-staging'
-def GITHUB_CREDENTIAL_ID = 'github-digifi'
+// def GITHUB_CREDENTIAL_ID = 'github-digifi'
 def NAMESPACE = 'apps'
 def MIGRATION_CHECK = false
 
@@ -23,8 +23,8 @@ pipeline {
       DEFAULT_INGRESS_HOST = 'staging.digifi.cc'
       ECR_REGISTRY = '439232230176.dkr.ecr.us-east-1.amazonaws.com'
       ENVIRONMENT_NAME = 'staging'
-      GIT_REPO_TOKEN = credentials("${GITHUB_CREDENTIAL_ID}")
-      GITHUB_CREDENTIAL_ID = "${GITHUB_CREDENTIAL_ID}"
+      // GIT_REPO_TOKEN = credentials("${GITHUB_CREDENTIAL_ID}")
+      // GITHUB_CREDENTIAL_ID = "${GITHUB_CREDENTIAL_ID}"
       NAMESPACE = "${NAMESPACE}"
       HELM_EXPERIMENTAL_OCI = 1
       HELM_VALUES_S3_BUCKET = 'digifi-helm-values-eyjhbgcioijiuzi1niisinr5cci6ikpxvcj9' 
@@ -43,4 +43,3 @@ pipeline {
         }
     }
 }
-// test
