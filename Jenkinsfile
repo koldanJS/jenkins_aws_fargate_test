@@ -1,3 +1,8 @@
+def CLOUD = 'digifi-staging'
+def GITHUB_CREDENTIAL_ID = 'github-digifi'
+def NAMESPACE = 'apps'
+def MIGRATION_CHECK = false
+
 pipeline {
     agent any
     options {
@@ -38,4 +43,3 @@ pipeline {
         }
     }
 }
-// test
