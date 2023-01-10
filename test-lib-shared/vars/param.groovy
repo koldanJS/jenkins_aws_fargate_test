@@ -34,7 +34,6 @@ def getGithubRepoReleases(Map config = [:]) {
                                         ).find {
                                             it.id == '$github_credentials_id'
                                         }
-                                        return(creds)
                                         def http = new URL('$github_repo').openConnection() as HttpURLConnection
                                         http.setRequestMethod('GET')
                                         http.setDoOutput(true)
@@ -54,7 +53,7 @@ def getGithubRepoReleases(Map config = [:]) {
                                             return [response]
                                         }
                                    } catch (Exception e) {
-                                        return ["error"]
+                                        return ["error-test2"]
                                    }
                                 """
                     ]
