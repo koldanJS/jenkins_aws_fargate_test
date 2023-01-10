@@ -21,7 +21,7 @@ def getGithubRepoReleases(Map config = [:]) {
                     $class: 'GroovyScript',
                     fallbackScript: [
                       sandbox: true,
-                      script : 'return ["error"]'
+                      script : 'return ["error-test"]'
                     ],
                     script: [
                         classpath: [],
