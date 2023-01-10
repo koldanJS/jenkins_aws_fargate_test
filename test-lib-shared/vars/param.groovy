@@ -26,7 +26,8 @@ def getGithubRepoReleases(Map config = [:]) {
                     script: [
                         classpath: [],
                         sandbox: true,
-                        script: """import groovy.json.JsonSlurper
+                        script: """withCredentials([usernamePassword(credentialsId: 'github-test-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                                   import groovy.json.JsonSlurper
                                    import jenkins.model.*
                                    try {
                                         return ["error-test3"]
@@ -55,6 +56,7 @@ def getGithubRepoReleases(Map config = [:]) {
                                         }
                                    } catch (Exception e) {
                                         return ["error"]
+                                   }
                                    }
                                 """
                     ]
