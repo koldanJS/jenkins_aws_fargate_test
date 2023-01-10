@@ -21,7 +21,7 @@ def getGithubRepoReleases(Map config = [:]) {
                     $class: 'GroovyScript',
                     fallbackScript: [
                       sandbox: true,
-                      script : 'return ["error-test"]'
+                      script : 'return ["error"]'
                     ],
                     script: [
                         classpath: [],
@@ -29,6 +29,7 @@ def getGithubRepoReleases(Map config = [:]) {
                         script: """import groovy.json.JsonSlurper
                                    import jenkins.model.*
                                    try {
+                                        return ["error-test3"]
                                         def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
                                         com.cloudbees.plugins.credentials.common.StandardUsernameCredentials, Jenkins.instance, null, null
                                         ).find {
@@ -53,7 +54,7 @@ def getGithubRepoReleases(Map config = [:]) {
                                             return [response]
                                         }
                                    } catch (Exception e) {
-                                        return ["error-test2"]
+                                        return ["error"]
                                    }
                                 """
                     ]
