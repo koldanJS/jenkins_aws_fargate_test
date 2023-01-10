@@ -1,4 +1,3 @@
-
 def getGithubRepoReleases(Map config = [:]) {
   if ( config['github_repo'] == null ) {
     error(['"github_repo" argument is mandatory'])
@@ -26,14 +25,19 @@ def getGithubRepoReleases(Map config = [:]) {
                     script: [
                         classpath: [],
                         sandbox: true,
-                        script: """withCredentials([usernamePassword(credentialsId: 'github-test-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        script: """import groovy.json.JsonSlurper
+                                   import jenkins.model.*
                                    try {
-                                        import groovy.json.JsonSlurper
+                                        def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+                                        com.cloudbees.plugins.credentials.common.StandardUsernameCredentials, Jenkins.instance, null, null
+                                        ).find {
+                                            it.id == '$github_credentials_id'
+                                        }
                                         def http = new URL('$github_repo').openConnection() as HttpURLConnection
                                         http.setRequestMethod('GET')
                                         http.setDoOutput(true)
                                         http.setRequestProperty('Accept', 'application/json')
-                                        http.setRequestProperty('Authorization', "Bearer ${PASSWORD}")
+                                        http.setRequestProperty('Authorization', "token \${creds.password}")
                                         http.connect()
                                         def response = [:]
                                         if (http.responseCode == 200) {
@@ -49,7 +53,6 @@ def getGithubRepoReleases(Map config = [:]) {
                                         }
                                    } catch (Exception e) {
                                         return ["error"]
-                                   }
                                    }
                                 """
                     ]
