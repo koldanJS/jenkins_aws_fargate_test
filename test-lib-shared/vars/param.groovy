@@ -27,36 +27,29 @@ def getGithubRepoReleases(Map config = [:]) {
                         classpath: [],
                         sandbox: true,
                         script: """withCredentials([usernamePassword(credentialsId: 'github-test-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                                   import groovy.json.JsonSlurper
-                                   import jenkins.model.*
-                                  //  try {
-                                  //       return ["error-test3"]
-                                  //       def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
-                                  //       com.cloudbees.plugins.credentials.common.StandardUsernameCredentials, Jenkins.instance, null, null
-                                  //       ).find {
-                                  //           it.id == '$github_credentials_id'
-                                  //       }
-                                  //       def http = new URL('$github_repo').openConnection() as HttpURLConnection
-                                  //       http.setRequestMethod('GET')
-                                  //       http.setDoOutput(true)
-                                  //       http.setRequestProperty('Accept', 'application/json')
-                                  //       http.setRequestProperty('Authorization', "token \${creds.password}")
-                                  //       http.connect()
-                                  //       def response = [:]
-                                  //       if (http.responseCode == 200) {
-                                  //           response = new JsonSlurper().parseText(http.inputStream.getText('UTF-8'))
-                                  //           def resArr = []
-                                  //           response .each { it->
-                                  //               resArr.push(it.tag_name)
-                                  //           }
-                                  //           return resArr
-                                  //       } else {
-                                  //           response = new JsonSlurper().parseText(http.errorStream.getText('UTF-8'))
-                                  //           return [response]
-                                  //       }
-                                  //  } catch (Exception e) {
-                                  //       return ["error"]
-                                  //  }
+                                   try {
+                                        import groovy.json.JsonSlurper
+                                        def http = new URL('$github_repo').openConnection() as HttpURLConnection
+                                        http.setRequestMethod('GET')
+                                        http.setDoOutput(true)
+                                        http.setRequestProperty('Accept', 'application/json')
+                                        http.setRequestProperty('Authorization', "Bearer ${PASSWORD}")
+                                        http.connect()
+                                        def response = [:]
+                                        if (http.responseCode == 200) {
+                                            response = new JsonSlurper().parseText(http.inputStream.getText('UTF-8'))
+                                            def resArr = []
+                                            response .each { it->
+                                                resArr.push(it.tag_name)
+                                            }
+                                            return resArr
+                                        } else {
+                                            response = new JsonSlurper().parseText(http.errorStream.getText('UTF-8'))
+                                            return [response]
+                                        }
+                                   } catch (Exception e) {
+                                        return ["error"]
+                                   }
                                    }
                                 """
                     ]
