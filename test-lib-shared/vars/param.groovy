@@ -34,7 +34,7 @@ def getGithubRepoReleases(Map config = [:]) {
                                         ).find {
                                             it.id == '$github_credentials_id'
                                         }
-                                        println(creds)
+                                        return(creds)
                                         def http = new URL('$github_repo').openConnection() as HttpURLConnection
                                         http.setRequestMethod('GET')
                                         http.setDoOutput(true)
@@ -48,13 +48,9 @@ def getGithubRepoReleases(Map config = [:]) {
                                             response .each { it->
                                                 resArr.push(it.tag_name)
                                             }
-                                            println(http)
-                                            println(response)
-                                            println(resArr)
                                             return resArr
                                         } else {
                                             response = new JsonSlurper().parseText(http.errorStream.getText('UTF-8'))
-                                            println(response)
                                             return [response]
                                         }
                                    } catch (Exception e) {
