@@ -67,17 +67,17 @@ pipeline {
               submoduleCfg: [],
               userRemoteConfigs: [
                 [
-                  credentialsId: "${GITHUB_TOKEN_ID}",
+                  credentialsId: "${GITHUB_CREDENTIAL_ID}",
                   url: "${GITHUB_REPO_URL}"
                 ]
               ]
             ]
           )
-          // sh(
-          //   returnStdout: true,
-          //   label: 'Install secrets-migrator script requirements',
-          //   script: 'pip install -r secrets-migrator/requirements.txt'
-          // )
+          sh(
+            returnStdout: true,
+            label: 'Install secrets-migrator script requirements',
+            script: 'pip install -r secrets-migrator/requirements.txt'
+          )
         }
       }
     }
