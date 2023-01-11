@@ -2,13 +2,15 @@
 
 def CLOUD = 'test-staging'
 def GITHUB_CREDENTIAL_ID = 'github-test-creds'
+def GITHUB_REPO_URL = 'https://github.com/koldanJS/jenkins_aws_fargate_test.git'
+def GITHUB_API_REPO_URL = 'https://api.github.com/repos/koldanJS/jenkins_aws_fargate_test/releases'
 def NAMESPACE = 'apps'
 def MIGRATION_CHECK = false
 
 properties([
     parameters([
         param.getGithubRepoReleases(
-            github_repo:'https://api.github.com/repos/koldanJS/jenkins_aws_fargate_test/releases',
+            github_repo: "${GITHUB_API_REPO_URL}",
             github_credentials_id: "${GITHUB_CREDENTIAL_ID}")
     ])
 ])
@@ -54,29 +56,28 @@ pipeline {
     }
     stage('Checkout secrets-migrator script') {
       steps {
-        echo "Step"
-        // container('python') {
-        //   checkout(
-        //     [
-        //       $class: 'GitSCM',
-        //       branches: [[name: '*/DEVOPS-386-test']],
-        //       doGenerateSubmoduleConfigurations: false,
-        //       extensions: [],
-        //       submoduleCfg: [],
-        //       userRemoteConfigs: [
-        //         [
-        //           credentialsId: "${GITHUB_CREDENTIAL_ID}",
-        //           url: 'https://github.com/digifi-io/digifi-devops.git'
-        //         ]
-        //       ]
-        //     ]
-        //   )
-        //   sh(
-        //     returnStdout: true,
-        //     label: 'Install secrets-migrator script requirements',
-        //     script: 'pip install -r secrets-migrator/requirements.txt'
-        //   )
-        // }
+        container('python') {
+          checkout(
+            [
+              $class: 'GitSCM',
+              branches: [[name: '*/master']],
+              doGenerateSubmoduleConfigurations: false,
+              extensions: [],
+              submoduleCfg: [],
+              userRemoteConfigs: [
+                [
+                  credentialsId: "${GITHUB_CREDENTIAL_ID}",
+                  url: "${GITHUB_REPO_URL}"
+                ]
+              ]
+            ]
+          )
+          sh(
+            returnStdout: true,
+            label: 'Install secrets-migrator script requirements',
+            script: 'pip install -r secrets-migrator/requirements.txt'
+          )
+        }
       }
     }
     stage('Check secrets migration') {
