@@ -1,7 +1,7 @@
 @Library('test-lib-shared') _
 
 def CLOUD = 'test-staging'
-def GITHUB_CREDENTIAL_ID = 'github-test-creds'
+def GITHUB_CREDENTIAL_ID = 'github_test_token'
 def GITHUB_TOKEN_ID = 'github_test_token'
 def GITHUB_REPO_URL = 'https://github.com/koldanJS/jenkins_aws_fargate_test.git'
 def GITHUB_API_REPO_URL = 'https://api.github.com/repos/koldanJS/jenkins_aws_fargate_test/releases'
