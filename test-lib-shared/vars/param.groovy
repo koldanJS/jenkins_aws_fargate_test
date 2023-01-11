@@ -37,7 +37,7 @@ def getGithubRepoReleases(Map config = [:]) {
                         http.setRequestMethod('GET')
                         http.setDoOutput(true)
                         http.setRequestProperty('Accept', 'application/json')
-                        http.setRequestProperty('Authorization', "token \${cred}")
+                        http.setRequestProperty('Authorization', "token \${cred.secret}")
                         http.connect()
                         def response = [:]
                         if (http.responseCode == 200) {
