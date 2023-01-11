@@ -73,11 +73,11 @@ pipeline {
               ]
             ]
           )
-          sh(
-            returnStdout: true,
-            label: 'Install secrets-migrator script requirements',
-            script: 'pip install -r secrets-migrator/requirements.txt'
-          )
+          // sh(
+          //   returnStdout: true,
+          //   label: 'Install secrets-migrator script requirements',
+          //   script: 'pip install -r secrets-migrator/requirements.txt'
+          // )
         }
       }
     }
