@@ -59,6 +59,7 @@ pipeline {
       steps {
         container('python') {
           checkout(
+            echo "Test Hello !!!!!!!!!!!!!!!!!!"
             [
               $class: 'GitSCM',
               branches: [[name: '*/master']],
