@@ -73,6 +73,7 @@ pipeline {
               ]
             ]
           )
+          echo "!!!!!!!!!!!!!!!"
           // sh(
           //   returnStdout: true,
           //   label: 'Install secrets-migrator script requirements',
