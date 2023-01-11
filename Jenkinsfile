@@ -58,8 +58,8 @@ pipeline {
     stage('Checkout secrets-migrator script') {
       steps {
         container('python') {
-          checkout(
             echo "Test Hello !!!!!!!!!!!!!!!!!!"
+          checkout(
             [
               $class: 'GitSCM',
               branches: [[name: '*/master']],
