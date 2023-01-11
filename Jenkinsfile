@@ -55,73 +55,69 @@ pipeline {
                   channel: '#jenkins-test'
       }
     }
-    stage('Checkout secrets-migrator script') {
-      steps {
-            echo "Test Hello !!!!!!!!!!!!!!!!!!"
-        container('python') {
-          checkout(
-            [
-              $class: 'GitSCM',
-              branches: [[name: '*/master']],
-              doGenerateSubmoduleConfigurations: false,
-              extensions: [],
-              submoduleCfg: [],
-              userRemoteConfigs: [
-                [
-                  credentialsId: "${GITHUB_CREDENTIAL_ID}",
-                  url: "${GITHUB_REPO_URL}"
-                ]
-              ]
-            ]
-          )
-          sh(
-            returnStdout: true,
-            label: 'Install secrets-migrator script requirements',
-            script: 'pip install -r secrets-migrator/requirements.txt'
-          )
-        }
-      }
-    }
-    stage('Check secrets migration') {
-      steps {
-        echo "Step"
-        // script {
-        //   MIGRATION_CHECK = checkSecretsMigration()
-        //   echo "${MIGRATION_CHECK}"
-        // }
-      }
-    }
-    stage('Run secrets migration') {
-      steps {
-        echo "Step"
-      //   secretsMigration()
-      // }
-      // post {
-      //   success {
-      //     script {
-      //       MIGRATION_APPLIED = true
-      //     }
-      //   }
-      //   failure {
-      //     script {
-      //       MIGRATION_APPLIED = false
-      //     }
-      //   }
-      }
-    }
+    // stage('Checkout secrets-migrator script') {
+    //   steps {
+    //     container('python') {
+    //       checkout(
+    //         [
+    //           $class: 'GitSCM',
+    //           branches: [[name: '*/master']],
+    //           doGenerateSubmoduleConfigurations: false,
+    //           extensions: [],
+    //           submoduleCfg: [],
+    //           userRemoteConfigs: [
+    //             [
+    //               credentialsId: "${GITHUB_CREDENTIAL_ID}",
+    //               url: "${GITHUB_REPO_URL}"
+    //             ]
+    //           ]
+    //         ]
+    //       )
+    //       sh(
+    //         returnStdout: true,
+    //         label: 'Install secrets-migrator script requirements',
+    //         script: 'pip install -r secrets-migrator/requirements.txt'
+    //       )
+    //     }
+    //   }
+    // }
+    // stage('Check secrets migration') {
+    //   steps {
+    //     script {
+    //       MIGRATION_CHECK = checkSecretsMigration()
+    //       echo "${MIGRATION_CHECK}"
+    //     }
+    //   }
+    // }
+    // stage('Run secrets migration') {
+    //   steps {
+    //     secretsMigration()
+    //   }
+    //   post {
+    //     success {
+    //       script {
+    //         MIGRATION_APPLIED = true
+    //       }
+    //     }
+    //     failure {
+    //       script {
+    //         MIGRATION_APPLIED = false
+    //       }
+    //     }
+    //   }
+    // }
     stage('Login into ECR') {
       steps {
-        echo "Step"
-        // container('helm') {
-        //   withAWS(region: "${AWS_REGION}", credentials: "${AWS_CREDENTIALS_ID}") {
-        //     sh(
-        //       returnStdout: true,
-        //       label: 'Login into ECR',
-        //       script: "aws ecr get-login-password --region ${AWS_REGION} | \
-        //               helm registry login --username AWS --password-stdin ${ECR_REGISTRY}"
-        //     )
-        //   }
-        // }
+        container('helm') {
+          withAWS(region: "${AWS_REGION}", credentials: "${AWS_CREDENTIALS_ID}") {
+            sh(
+              returnStdout: true,
+              label: 'Login into ECR',
+              script: "aws ecr get-login-password --region ${AWS_REGION} | \
+                      helm registry login --username AWS --password-stdin ${ECR_REGISTRY}"
+            )
+          }
+        }
       }
     }
     stage('Running helm deploy') {
