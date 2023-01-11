@@ -2,6 +2,7 @@
 
 def CLOUD = 'test-staging'
 def GITHUB_CREDENTIAL_ID = 'github_test_token'
+// def GITHUB_CREDENTIAL_ID = 'github-test-creds'
 def GITHUB_TOKEN_ID = 'github_test_token'
 def GITHUB_REPO_URL = 'https://github.com/koldanJS/jenkins_aws_fargate_test.git'
 def GITHUB_API_REPO_URL = 'https://api.github.com/repos/koldanJS/jenkins_aws_fargate_test/releases'
@@ -32,7 +33,7 @@ pipeline {
   environment {
     AWS_REGION = 'eu-central-1'
     AWS_CREDENTIALS_ID = 'test-staging-deployment-user'
-    AWS_SECRETS_MANAGER_ID = 'arn:aws:secretsmanager:eu-central-1:2663211286062:secret:test/staging/application-dVcQU09D-TmX6IX'
+    AWS_SECRETS_MANAGER_ID = 'arn:aws:secretsmanager:eu-central-1:266321186062:secret:test/staging/application-dVcQU09D-TmX6IX'
     DEFAULT_INGRESS_HOST = 'staging.digifi.cc'
     ECR_REGISTRY = '089655067548.dkr.ecr.eu-central-1.amazonaws.com/jenkins_aws_test'
     ENVIRONMENT_NAME = 'staging'
