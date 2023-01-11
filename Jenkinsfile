@@ -54,6 +54,7 @@ pipeline {
     }
     stage('Checkout secrets-migrator script') {
       steps {
+        echo "Step"
         // container('python') {
         //   checkout(
         //     [
@@ -80,6 +81,7 @@ pipeline {
     }
     stage('Check secrets migration') {
       steps {
+        echo "Step"
         // script {
         //   MIGRATION_CHECK = checkSecretsMigration()
         //   echo "${MIGRATION_CHECK}"
@@ -88,6 +90,7 @@ pipeline {
     }
     stage('Run secrets migration') {
       steps {
+        echo "Step"
       //   secretsMigration()
       // }
       // post {
@@ -105,6 +108,7 @@ pipeline {
     }
     stage('Login into ECR') {
       steps {
+        echo "Step"
         // container('helm') {
         //   withAWS(region: "${AWS_REGION}", credentials: "${AWS_CREDENTIALS_ID}") {
         //     sh(
@@ -119,6 +123,7 @@ pipeline {
     }
     stage('Running helm deploy') {
       steps {
+        echo "Step"
         // script {
         //   parallel([
         //     'digifi-auth': helmDeployClosure(
@@ -164,6 +169,7 @@ pipeline {
     }
     stage('Running digifi-migration-job') {
       steps {
+        echo "Step"
         // script {
         //   helmDeployClosure(
         //     helm_ecr_repository:  'digifi-migrations-helm-chart',
