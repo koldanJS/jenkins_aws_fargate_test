@@ -52,139 +52,139 @@ pipeline {
                   channel: '#jenkins-test'
       }
     }
-    // stage('Checkout secrets-migrator script') {
-    //   steps {
-    //     echo "Step"
-    //     // container('python') {
-    //     //   checkout(
-    //     //     [
-    //     //       $class: 'GitSCM',
-    //     //       branches: [[name: '*/DEVOPS-386-test']],
-    //     //       doGenerateSubmoduleConfigurations: false,
-    //     //       extensions: [],
-    //     //       submoduleCfg: [],
-    //     //       userRemoteConfigs: [
-    //     //         [
-    //     //           credentialsId: "${GITHUB_CREDENTIAL_ID}",
-    //     //           url: 'https://github.com/digifi-io/digifi-devops.git'
-    //     //         ]
-    //     //       ]
-    //     //     ]
-    //     //   )
-    //     //   sh(
-    //     //     returnStdout: true,
-    //     //     label: 'Install secrets-migrator script requirements',
-    //     //     script: 'pip install -r secrets-migrator/requirements.txt'
-    //     //   )
-    //     // }
-    //   }
-    // }
-    // stage('Check secrets migration') {
-    //   steps {
-    //     echo "Step"
-    //     // script {
-    //     //   MIGRATION_CHECK = checkSecretsMigration()
-    //     //   echo "${MIGRATION_CHECK}"
-    //     // }
-    //   }
-    // }
-    // stage('Run secrets migration') {
-    //   steps {
-    //     echo "Step"
-    //   //   secretsMigration()
-    //   // }
-    //   // post {
-    //   //   success {
-    //   //     script {
-    //   //       MIGRATION_APPLIED = true
-    //   //     }
-    //   //   }
-    //   //   failure {
-    //   //     script {
-    //   //       MIGRATION_APPLIED = false
-    //   //     }
-    //   //   }
-    //   }
-    // }
-    // stage('Login into ECR') {
-    //   steps {
-    //     echo "Step"
-    //     // container('helm') {
-    //     //   withAWS(region: "${AWS_REGION}", credentials: "${AWS_CREDENTIALS_ID}") {
-    //     //     sh(
-    //     //       returnStdout: true,
-    //     //       label: 'Login into ECR',
-    //     //       script: "aws ecr get-login-password --region ${AWS_REGION} | \
-    //     //               helm registry login --username AWS --password-stdin ${ECR_REGISTRY}"
-    //     //     )
-    //     //   }
-    //     // }
-    //   }
-    // }
-    // stage('Running helm deploy') {
-    //   steps {
-    //     echo "Step"
-    //     // script {
-    //     //   parallel([
-    //     //     'digifi-auth': helmDeployClosure(
-    //     //         helm_ecr_repository:  'digifi-auth-helm-chart',
-    //     //         release_name:  'digifi-auth',
-    //     //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
-    //     //     'digifi-core': helmDeployClosure(
-    //     //         helm_ecr_repository:  'digifi-core-helm-chart',
-    //     //         release_name:  'digifi-core',
-    //     //         default_ingress_host: 'adfaf.blal.afa',
-    //     //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
-    //     //     'digifi-de': helmDeployClosure(
-    //     //         helm_ecr_repository:  'digifi-decision-engine-helm-chart',
-    //     //         release_name:  'digifi-de',
-    //     //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
-    //     //     'digifi-dlp': helmDeployClosure(
-    //     //         helm_ecr_repository:  'digifi-dlp-helm-chart',
-    //     //         release_name:  'digifi-dlp',
-    //     //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
-    //     //     'digifi-dp': helmDeployClosure(
-    //     //         helm_ecr_repository:  'digifi-decision-processing-helm-chart',
-    //     //         release_name:  'digifi-dp',
-    //     //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
-    //     //     'digifi-legacy': helmDeployClosure(
-    //     //         helm_ecr_repository:  'digifi-legacy-backend-helm-chart',
-    //     //         release_name:  'digifi-legacy',
-    //     //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
-    //     //     'digifi-los': helmDeployClosure(
-    //     //         helm_ecr_repository:  'digifi-loan-origination-system-helm-chart',
-    //     //         release_name:  'digifi-los',
-    //     //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
-    //     //     'digifi-webhooks': helmDeployClosure(
-    //     //         helm_ecr_repository:  'digifi-webhooks-helm-chart',
-    //     //         release_name:  'digifi-webhooks',
-    //     //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
-    //     //     'digifi-process-automation': helmDeployClosure(
-    //     //         helm_ecr_repository:  'digifi-process-automation-helm-chart',
-    //     //         release_name:  'digifi-process-automation',
-    //     //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}")
-    //     //   ])
-    //     // }
-    //   }
-    // }
-    // stage('Running digifi-migration-job') {
-    //   steps {
-    //     echo "Step"
-    //     // script {
-    //     //   helmDeployClosure(
-    //     //     helm_ecr_repository:  'digifi-migrations-helm-chart',
-    //     //     release_name:  'digifi-migration-job',
-    //     //     helm_chart_version:  "2.0.0-${RELEASE_VERSION}").call()
-    //     // }
-    //   }
-    //   // post {
-    //   //   success {
-    //   //     script {
-    //   //       getK8sLogs(label: 'app=digifi-migration-job')
-    //   //     }
-    //   //   }
-    //   // }
-    // }
+    stage('Checkout secrets-migrator script') {
+      steps {
+        echo "Step"
+        // container('python') {
+        //   checkout(
+        //     [
+        //       $class: 'GitSCM',
+        //       branches: [[name: '*/DEVOPS-386-test']],
+        //       doGenerateSubmoduleConfigurations: false,
+        //       extensions: [],
+        //       submoduleCfg: [],
+        //       userRemoteConfigs: [
+        //         [
+        //           credentialsId: "${GITHUB_CREDENTIAL_ID}",
+        //           url: 'https://github.com/digifi-io/digifi-devops.git'
+        //         ]
+        //       ]
+        //     ]
+        //   )
+        //   sh(
+        //     returnStdout: true,
+        //     label: 'Install secrets-migrator script requirements',
+        //     script: 'pip install -r secrets-migrator/requirements.txt'
+        //   )
+        // }
+      }
+    }
+    stage('Check secrets migration') {
+      steps {
+        echo "Step"
+        // script {
+        //   MIGRATION_CHECK = checkSecretsMigration()
+        //   echo "${MIGRATION_CHECK}"
+        // }
+      }
+    }
+    stage('Run secrets migration') {
+      steps {
+        echo "Step"
+      //   secretsMigration()
+      // }
+      // post {
+      //   success {
+      //     script {
+      //       MIGRATION_APPLIED = true
+      //     }
+      //   }
+      //   failure {
+      //     script {
+      //       MIGRATION_APPLIED = false
+      //     }
+      //   }
+      }
+    }
+    stage('Login into ECR') {
+      steps {
+        echo "Step"
+        // container('helm') {
+        //   withAWS(region: "${AWS_REGION}", credentials: "${AWS_CREDENTIALS_ID}") {
+        //     sh(
+        //       returnStdout: true,
+        //       label: 'Login into ECR',
+        //       script: "aws ecr get-login-password --region ${AWS_REGION} | \
+        //               helm registry login --username AWS --password-stdin ${ECR_REGISTRY}"
+        //     )
+        //   }
+        // }
+      }
+    }
+    stage('Running helm deploy') {
+      steps {
+        echo "Step"
+        // script {
+        //   parallel([
+        //     'digifi-auth': helmDeployClosure(
+        //         helm_ecr_repository:  'digifi-auth-helm-chart',
+        //         release_name:  'digifi-auth',
+        //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+        //     'digifi-core': helmDeployClosure(
+        //         helm_ecr_repository:  'digifi-core-helm-chart',
+        //         release_name:  'digifi-core',
+        //         default_ingress_host: 'adfaf.blal.afa',
+        //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+        //     'digifi-de': helmDeployClosure(
+        //         helm_ecr_repository:  'digifi-decision-engine-helm-chart',
+        //         release_name:  'digifi-de',
+        //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+        //     'digifi-dlp': helmDeployClosure(
+        //         helm_ecr_repository:  'digifi-dlp-helm-chart',
+        //         release_name:  'digifi-dlp',
+        //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+        //     'digifi-dp': helmDeployClosure(
+        //         helm_ecr_repository:  'digifi-decision-processing-helm-chart',
+        //         release_name:  'digifi-dp',
+        //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+        //     'digifi-legacy': helmDeployClosure(
+        //         helm_ecr_repository:  'digifi-legacy-backend-helm-chart',
+        //         release_name:  'digifi-legacy',
+        //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+        //     'digifi-los': helmDeployClosure(
+        //         helm_ecr_repository:  'digifi-loan-origination-system-helm-chart',
+        //         release_name:  'digifi-los',
+        //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+        //     'digifi-webhooks': helmDeployClosure(
+        //         helm_ecr_repository:  'digifi-webhooks-helm-chart',
+        //         release_name:  'digifi-webhooks',
+        //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}"),
+        //     'digifi-process-automation': helmDeployClosure(
+        //         helm_ecr_repository:  'digifi-process-automation-helm-chart',
+        //         release_name:  'digifi-process-automation',
+        //         helm_chart_version:  "2.0.0-${RELEASE_VERSION}")
+        //   ])
+        // }
+      }
+    }
+    stage('Running digifi-migration-job') {
+      steps {
+        echo "Step"
+        // script {
+        //   helmDeployClosure(
+        //     helm_ecr_repository:  'digifi-migrations-helm-chart',
+        //     release_name:  'digifi-migration-job',
+        //     helm_chart_version:  "2.0.0-${RELEASE_VERSION}").call()
+        // }
+      }
+      // post {
+      //   success {
+      //     script {
+      //       getK8sLogs(label: 'app=digifi-migration-job')
+      //     }
+      //   }
+      // }
+    }
   }
   // post {
   //   failure {
